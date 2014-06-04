@@ -9,28 +9,39 @@
 
 // Pin 13 has an LED connected on most Arduino boards.
 // give it a name:
-int led = 13;
-int val = 0 ;
+int led = 13 ;
+int dht22_pin = 2 ;
+int val =  0 ;
+
+
+void interrupt_dht022( )
+{
+	if( LOW == digitalRead( dht22_pin ) )
+	{
+		digitalWrite(led, LOW);   // turn the LED on (HIGH is the voltage level)
+	}
+	else
+	{
+		digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
+	}
+}
 
 // the setup routine runs once when you press reset:
-void setup() {
-  // initialize the digital pin as an output.
-	Serial.begin(9600);
+void setup()
+{
+	// initialize the digital pin as an output.
+	attachInterrupt(0,interrupt_dht022, FALLING) ;
 
+	Serial.begin(9600) ;
 }
 
 // the loop routine runs over and over again forever:
-void loop() {
-  val = analogRead(A0);
-  digitalWrite(7, LOW);
-  pinMode(7, OUTPUT);
-  delay(5);
-  pinMode(7, INPUT);
+void loop()
+{
+	digitalWrite(dht22_pin, LOW);   // Send the start signal
+	pinMode(dht22_pin, OUTPUT) ;
+	delay( 5 ) ;
+	pinMode(dht22_pin, INPUT) ;
 
-  Serial.println(val);
-
-  digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(100);               // wait for a second
-  digitalWrite(led, LOW);    // turn the LED off by making the voltage LOW
-  delay(100);               // wait for a second
+	attachInterrupt(0,interrupt_dht022, FALLING) ;
 }
