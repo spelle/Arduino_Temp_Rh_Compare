@@ -16,8 +16,6 @@
 int led = 13 ;
 int dht22_pin = 2 ;
 int val =  0 ;
-unsigned long ulMicros = 0 ;
-unsigned char ucDHT22BitCount = 40 ;
 
 
 
@@ -34,17 +32,11 @@ dht22_state_t DHT22_State = dht22_Init ;
 
 
 void interrupt_dht022( )
-{
-	Serial.print( int(ucDHT22BitCount) ) ;
+{	//Called on falling edges !
 
-	if( LOW == digitalRead( dht22_pin ) )
-	{
-		digitalWrite(led, LOW);   // turn the LED on (HIGH is the voltage level)
-	}
-	else
-	{
-		digitalWrite(led, HIGH);   // turn the LED on (HIGH is the voltage level)
-	}
+	static unsigned char ucDHT22BitCount ;
+	static unsigned long ulMicros_prev   ;
+	static unsigned long ulMicros        ;
 
 	ulMicros = micros() ;
 
@@ -63,6 +55,10 @@ void interrupt_dht022( )
 
 		case dht22_SensorSendData :
 			// A bit has been received !
+
+
+
+
 			ucDHT22BitCount -- ;
 
 			if( 0 == ucDHT22BitCount )
@@ -96,9 +92,9 @@ void loop()
 	pinMode(dht22_pin, OUTPUT) ;
 	delay( 5 ) ;
 	pinMode(dht22_pin, INPUT) ;
-	DHT22_State = dht22_HostWaitForSensorStart ;
 
-	attachInterrupt(0,interrupt_dht022, RISING) ;
+	DHT22_State = dht22_HostWaitForSensorStart ;
+	attachInterrupt(0,interrupt_dht022, FALLING) ;
 
 	delay( 5000 ) ;
 }
