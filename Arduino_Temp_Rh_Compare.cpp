@@ -1,100 +1,53 @@
-/*
-  Blink
-  Turns on an LED on for one second, then off for one second, repeatedly.
-
-  This example code is in the public domain.
- */
-
-
-
+//
+//    FILE: dht_test.ino
+//  AUTHOR: Rob Tillaart
+// VERSION: 0.1.07
+// PURPOSE: DHT Temperature & Humidity Sensor library for Arduino
+//     URL: http://arduino.cc/playground/Main/DHTLib
+//
+// Released to the public domain
+//
 #include <Arduino.h>
+#include <DHTlib/dht.h>
 
+dht DHT;
 
+#define DHT22_PIN 2
 
-// Pin 13 has an LED connected on most Arduino boards.
-// give it a name:
-int led = 13 ;
-int dht22_pin = 2 ;
-int val =  0 ;
-
-
-
-typedef enum
-{
-	dht22_Init,
-	dht22_HostSendStart,
-	dht22_HostWaitForSensorStart,
-	dht22_SensorSendData,
-
-} dht22_state_t ;
-dht22_state_t DHT22_State = dht22_Init ;
-
-
-
-void interrupt_dht022( )
-{	//Called on falling edges !
-
-	static unsigned char ucDHT22BitCount ;
-	static unsigned long ulMicros_prev   ;
-	static unsigned long ulMicros        ;
-
-	ulMicros = micros() ;
-
-	switch( DHT22_State )
-	{
-		case dht22_Init :
-		case dht22_HostSendStart :
-		break ;
-
-		case dht22_HostWaitForSensorStart :
-			// Nothing to do
-			ucDHT22BitCount = 40 ;
-
-			DHT22_State = dht22_SensorSendData ;
-			break ;
-
-		case dht22_SensorSendData :
-			// A bit has been received !
-
-
-
-
-			ucDHT22BitCount -- ;
-
-			if( 0 == ucDHT22BitCount )
-				DHT22_State = dht22_HostSendStart ;
-
-			break ;
-	}
-
-}
-
-
-
-// the setup routine runs once when you press reset:
 void setup()
 {
-	// initialize the digital pin as an output.
-	//attachInterrupt(0,interrupt_dht022, FALLING) ;
-
-	Serial.begin(9600) ;
-
-	delay( 1000 ) ;
+  Serial.begin(115200);
+  Serial.println("DHT TEST PROGRAM ");
+  Serial.print("LIBRARY VERSION: ");
+  Serial.println(DHT_LIB_VERSION);
+  Serial.println();
+  Serial.println("Type,\tstatus,\tHumidity (%),\tTemperature (C)");
 }
 
-
-
-// the loop routine runs over and over again forever:
 void loop()
 {
-	DHT22_State = dht22_HostSendStart ;
-	digitalWrite(dht22_pin, LOW);   // Send the start signal
-	pinMode(dht22_pin, OUTPUT) ;
-	delay( 5 ) ;
-	pinMode(dht22_pin, INPUT) ;
+  // READ DATA
+  Serial.print("DHT22, \t");
+  int chk = DHT.read22(DHT22_PIN);
+  switch (chk)
+  {
+    case DHTLIB_OK:
+		Serial.print("OK,\t");
+		break;
+    case DHTLIB_ERROR_CHECKSUM:
+		Serial.print("Checksum error,\t");
+		break;
+    case DHTLIB_ERROR_TIMEOUT:
+		Serial.print("Time out error,\t");
+		break;
+    default:
+		Serial.print("Unknown error,\t");
+		break;
+  }
+  // DISPLAY DATA
+  Serial.print(DHT.humidity, 1);
+  Serial.print(",\t");
+  Serial.println(DHT.temperature, 1);
 
-	DHT22_State = dht22_HostWaitForSensorStart ;
-	attachInterrupt(0,interrupt_dht022, FALLING) ;
-
-	delay( 5000 ) ;
+  delay(1000);
 }
