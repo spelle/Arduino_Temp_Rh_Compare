@@ -8,7 +8,7 @@
 // Released to the public domain
 //
 #include <Arduino.h>
-#include <DHTlib/dht.h>
+#include <dht.h>
 
 dht DHT;
 
